@@ -20,7 +20,7 @@ Known values for OPTION are:
 
  --help		display this help and exit
  --debug	activate debug mode
- --private      create a local only feature branch
+ --remote       the feature branch is associated with an upstream remote origin
  --push         push non local feature branch to origin
 
 EOF
@@ -30,7 +30,7 @@ EOF
 debug=false
 from="develop"
 topic=""
-private=false
+remote=false
 push=false
 
 while [ -n "$1" ]; do
@@ -40,8 +40,8 @@ while [ -n "$1" ]; do
 	if [ "${optarg}" = "--help" ]; then
 	    app_usage
 	    bxdev_app_exit 0
-	elif [ "${optarg}" = "--private" ]; then
-	    private=true
+	elif [ "${optarg}" = "--remote" ]; then
+	    remote=true
 	elif [ "${optarg}" = "--debug" ]; then
 	    debug=true
 	elif [ "${optarg}" = "--push" ]; then
@@ -87,18 +87,27 @@ else
     bxdev_message_info "Found a local 'develop' branch."
 fi
 
-bxdev_app_exit 1 "Abort"
+bxdev_git_remote_branch_exists "develop"
+if [ $? -ne 0 ]; then
+    bxdev_app_exit 1 "No remote/origin 'develop' branch is associated to this Git repository!"
+else
+    bxdev_message_info "Found a remote/origin 'develop' branch."
+fi
 
-fb_name="feature-${topic}"
-if [ ${private} == true ]; then
-    fb_name="_feature-${topic}"
+# bxdev_app_exit 1 "Abort"
+
+fb_name="_feature-${topic}"
+if [ ${remote} == true ]; then
+    fb_name="feature-${topic}"
 fi
 git checkout -b ${fb_name} ${from}
 if [ $? -ne 0 ]; then
     bxdev_app_exit 1 "Cannot create the new feature branch '${fb_name}'!"
 fi
+bxdev_message_info "Feature branch name = ${fb_name}'"
+# bxdev_app_exit 1 "Abort"
 
-if [ ${private} == false -a  ${push} == true ]; then
+if [ ${remote} == true -a ${push} == true ]; then
     git push --set-upstream origin ${fb_name}
     if [ $? -ne 0 ]; then
 	bxdev_app_exit 1 "Cannot push the new feature branch on 'origin/${fb_name}'!"
