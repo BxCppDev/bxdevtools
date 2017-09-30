@@ -25,6 +25,33 @@ development through a specific branch model.
 * Tag management
 
 
+Installation
+============
+
+WIP
+
+#. From the BxDevTools source directory:
+
+   .. code:: sh
+
+   $ mkdir _build.d   # Create a build directory
+   $ cd _build.d      # Cd in it
+..
+
+#. Then configure:
+
+   .. code:: sh
+
+   $ cmake -DCMAKE_INSTALL_PREFIX="${HOME}/BxDevTools/bxdevtools/install-devel" ..
+..
+
+   #. Build and install:
+
+   .. code:: sh
+   $ make
+   $ make install
+..
+
 Setup
 =====
 
