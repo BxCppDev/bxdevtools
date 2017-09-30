@@ -73,10 +73,21 @@ if [ ${debug} = true ]; then
     bxdev_message_debug "push    = '${push}'"
 fi
 
-bxdev_git_check_repository()
+bxdev_git_check_repository
 if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "Not a git repository!"
+    bxdev_app_exit 1 "Not a Git repository!"
+else
+    bxdev_message_info "Found a Git repository."
 fi
+
+bxdev_git_local_branch_exists "develop"
+if [ $? -ne 0 ]; then
+    bxdev_app_exit 1 "No 'develop' branch exists in this Git repository!"
+else
+    bxdev_message_info "Found a local 'develop' branch."
+fi
+
+bxdev_app_exit 1 "Abort"
 
 fb_name="feature-${topic}"
 if [ ${private} == true ]; then
