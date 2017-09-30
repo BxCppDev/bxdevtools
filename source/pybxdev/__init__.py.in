@@ -1,0 +1,44 @@
+__all__ = ["bxdevtools"]
+
+def install_prefix() :
+    if not hasattr(install_prefix, "_install_prefix"):
+        import subprocess
+        import sys
+        proc = subprocess.Popen(["bxdevtools-config", "--prefix"],
+                                stdout=subprocess.PIPE)
+        out, err = proc.communicate()
+        install_prefix._install_prefix = out.decode('utf-8')[:-1]
+        # sys.stderr.write("[debug] install_prefix = <%s>\n"
+        #                  % (install_prefix._install_prefix))
+    return install_prefix._install_prefix
+
+def locate(tag_) :
+    if tag_ == "prefix" :
+        return install_prefix()
+    elif tag_ == "bindir" :
+        return install_prefix() + "/@CMAKE_INSTALL_BINDIR@"
+    elif tag_ == "libdir" :
+        return install_prefix() + "/@CMAKE_INSTALL_LIBDIR@"
+    elif tag_ == "moduledir" :
+        return install_prefix() + "/@CMAKE_INSTALL_LIBDIR@/@BxDevTools_TAG@/modules"
+    elif tag_ == "datadir" :
+        return install_prefix() + "/@CMAKE_INSTALL_DATAROOTDIR@/@BxDevTools_TAG@"
+    return None
+
+def version_major() :
+    return '@BxDevTools_VERSION_MAJOR@'
+
+def version_minor() :
+    return '@BxDevTools_VERSION_MINOR@'
+
+def version_patch() :
+    return '@BxDevTools_VERSION_PATCH@'
+
+def version() :
+    return '@BxDevTools_VERSION@'
+
+def __init_pybxdev__():
+    # sys.stderr.write("[trace] Loading pybxdev...\n")
+    return
+
+__init_pybxdev__()

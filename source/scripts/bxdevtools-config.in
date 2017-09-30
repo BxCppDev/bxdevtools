@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+bxdev_version="@BxDevTools_VERSION@"
+bxdev_prefix="@CMAKE_INSTALL_PREFIX@"
+bxdev_bindir="${bxdev_prefix}/@CMAKE_INSTALL_BINDIR@"
+bxdev_libdir="${bxdev_prefix}/@CMAKE_INSTALL_LIBDIR@"
+bxdev_moduledir="${bxdev_prefix}/@CMAKE_INSTALL_LIBDIR@/@BxDevTools_TAG@/modules"
+bxdev_datadir="${bxdev_prefix}/@CMAKE_INSTALL_DATAROOTDIR@/@BxDevTools_TAG@"
+bxdev_pythondir="${bxdev_prefix}/@CMAKE_INSTALL_LIBDIR@/@BxDevTools_TAG@"
+
+if [ -f ${bxdev_moduledir}/_bxdev_message.bash ]; then
+    . ${bxdev_moduledir}/_bxdev_message.bash
+fi
+
+function script_usage()
+{
+    cat<<EOF
+Usage: bxdevtools-config [OPTION]
+
+Known values for OPTION are:
+
+  --prefix		show bxdevtools installation prefix
+  --bindir		show executable installation directory
+  --libdir		show library installation directory
+  --moduledir		show module installation directory
+  --datadir		show data installation directory
+  --pythondir		show Python package installation directory
+  --version		output version information
+  --help		display this help and exit
+
+EOF
+    return 0
+}
+
+while [ -n "$1" ]; do
+    arg="$1"
+    if [ "${arg}" = "--help" ]; then
+	script_usage
+	exit 0
+    elif [ "${arg}" = "--version" ]; then
+	echo ${bxdev_version}
+	exit 0
+    elif [ "${arg}" = "--prefix" ]; then
+	echo ${bxdev_prefix}
+	exit 0
+    elif [ "${arg}" = "--bindir" ]; then
+	echo ${bxdev_bindir}
+	exit 0
+    elif [ "${arg}" = "--libdir" ]; then
+	echo ${bxdev_libdir}
+	exit 0
+    elif [ "${arg}" = "--moduledir" ]; then
+	echo ${bxdev_moduledir}
+	exit 0
+    elif [ "${arg}" = "--pythondir" ]; then
+	echo ${bxdev_pythondir}
+	exit 0
+    elif [ "${arg}" = "--datadir" ]; then
+	echo ${bxdev_datadir}
+	exit 0
+    else
+	bxdev_message_error "Unsupported argument '${arg}'!"
+	exit 1
+    fi
+    shift 1
+done
+
+bxdev_message_error "Missing argument!"
+script_usage
+exit 1
+
+# end

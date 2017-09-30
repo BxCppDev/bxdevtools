@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script; -*-
+
+which bxdevtools-config > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo >&2 "[error] Cannot found BxDevTools setup! Abort!"
+    exit 1
+fi
+
+. $(bxdevtools-config --moduledir)/_bxdev_app.bash
+. $(bxdevtools-config --moduledir)/_bxdev_message.bash
+
+function app_usage()
+{
+    cat <<EOF
+Usage: bxdevtools [OPTION]
+
+Known values for OPTION are:
+
+ --help		display this help and exit
+
+EOF
+    return 0
+}
+
+while [ -n "$1" ]; do
+    optarg="$1"
+    if [ "${optarg}" = "--help" ]; then
+	app_usage
+	bxdev_app_exit 0
+    else
+	bxdev_app_exit 1 "Unsupported option '${optarg}'!"
+    fi
+    shift 1
+done
+
+bxdev_app_exit 0
+
+# end

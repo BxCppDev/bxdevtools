@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# -*- mode: shell-script; -*-
+
+which bxdevtools-config > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo >&2 "[error] Cannot found BxDevTools setup! Abort!"
+    exit 1
+fi
+
+. $(bxdevtools-config --moduledir)/_bxdev_app.bash
+. $(bxdevtools-config --moduledir)/_bxdev_message.bash
+. $(bxdevtools-config --moduledir)/_bxdev_git.bash
+
+function app_usage()
+{
+    cat <<EOF
+Usage: bxgit_create_feature_branch [OPTION...] TOPIC [FROM]
+
+Known values for OPTION are:
+
+ --help		display this help and exit
+ --debug	activate debug mode
+ --private      create a local only feature branch
+ --push         push non local feature branch to origin
+
+EOF
+    return 0
+}
+
+debug=false
+from="develop"
+topic=""
+private=false
+push=false
+
+while [ -n "$1" ]; do
+    optarg="$1"
+    if [ "x${optarg:0:1}" = "x-" ]; then
+	option="${optarg}"
+	if [ "${optarg}" = "--help" ]; then
+	    app_usage
+	    bxdev_app_exit 0
+	elif [ "${optarg}" = "--private" ]; then
+	    private=true
+	elif [ "${optarg}" = "--debug" ]; then
+	    debug=true
+	elif [ "${optarg}" = "--push" ]; then
+	    push=true
+	else
+	    bxdev_app_exit 1 "Unsupported option '${optarg}'!"
+	fi
+    else
+	argument="${optarg}"
+	if [ -z "${topic}" ]; then
+	    bxdev_message_trace "Parsing topic..."
+	    topic="${argument}"
+	else
+	    bxdev_app_exit 1 "Unsupported option '${optarg}'!"
+	fi
+    fi
+    shift 1
+done
+
+if [ -z "${topic}" ]; then
+    app_usage
+    bxdev_app_exit 1 "Missing feature branch topic!"
+fi
+
+if [ ${debug} = true ]; then
+    bxdev_message_debug "topic = '${topic}'"
+    bxdev_message_debug "from branch  = '${from}'"
+    bxdev_message_debug "private = '${private}'"
+    bxdev_message_debug "push    = '${push}'"
+fi
+
+bxdev_git_check_repository()
+if [ $? -ne 0 ]; then
+    bxdev_app_exit 1 "Not a git repository!"
+fi
+
+fb_name="feature-${topic}"
+if [ ${private} == true ]; then
+    fb_name="_feature-${topic}"
+fi
+git checkout -b ${fb_name} ${from}
+if [ $? -ne 0 ]; then
+    bxdev_app_exit 1 "Cannot create the new feature branch '${fb_name}'!"
+fi
+
+if [ ${private} == false -a  ${push} == true ]; then
+    git push --set-upstream origin ${fb_name}
+    if [ $? -ne 0 ]; then
+	bxdev_app_exit 1 "Cannot push the new feature branch on 'origin/${fb_name}'!"
+    fi
+else
+    bxdev_message_info "New feature branch '${fb_name}' is not pushed on origin!"
+fi
+
+bxdev_app_exit 0
+
+# end

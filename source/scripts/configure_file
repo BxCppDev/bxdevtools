@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+# -*- mode: python; -*-
+
+import sys
+#import exceptions
+# import string
+# import os
+# import os.path
+
+import pybxdev.tools.configure_file
+
+if __name__ == "__main__" :
+    import argparse
+    # debug = False
+    # infile=None
+    # outfile=None
+    # subs = {}
+    parser = argparse.ArgumentParser(prog='configure_file',
+                                     description='Process some input skeleton file and apply substitution.',
+                                     epilog="Example:\n\n"
+                                     "\tconfigure_file -s \"@NAME@John Doe@\" run.conf.in run.conf"
+    )
+    parser.add_argument('infile',
+                        metavar='INFILE',
+                        help='input skeleton file')
+    parser.add_argument('outfile',
+                        metavar='OUTFILE',
+                        help='output file')
+    parser.add_argument('-d', '--debug',
+                        help='activate debug mode',
+                        action="store_true")
+    parser.add_argument('-s', '--substitute',
+                        metavar='"@TAG@VALUE@"',
+                        action='append',
+                        dest='substitutions',
+                        #nargs='+',
+                        default=[],
+                        help='add a substitution rule where each '
+                        'occurence of \'@TAG@\' will be replaced by the \'VALUE\' string.'
+                        '\nExample: -s "@NAME@John Doe@"')
+
+    args = parser.parse_args()
+    if args.debug :
+        print("[debug] args = %s" % args)
+        print("[debug] args.debug = %s" % args.debug)
+        print("[debug] args.infile = %s" % args.infile)
+        print("[debug] args.outfile = %s" % args.outfile)
+        print("[debug] args.substitutions = %s" % args.substitutions)
+
+    subs = {}
+    for s in args.substitutions :
+        if len(s) < 5 :
+            raise Exception("Substitution rule is too short!")
+        ss = s
+        if ss[0] != '@' :
+            raise Exception("Missing leading '@' for tag-to-value substitution rule!")
+        if ss[-1] != '@' :
+            raise Exception("Missing trailing '@' for tag-to-value substitution rule!")
+        rule = ss[1:-1]
+        tag_val = rule.split("@")
+        if len(tag_val) != 2 :
+            raise Exception("Missing separator '@' for tag-to-value substitution rule!")
+        tag = tag_val[0]
+        if len(tag) == 0 :
+            raise Exception("Invalid tag!")
+        val = tag_val[1]
+        if len(val) == 0 :
+            raise Exception("Invalid value!")
+        subs[tag] = val
+        if args.debug :
+            print("[debug] tag='%s' <=> value='%s'" % (tag, val))
+
+    print("[debug] test 1")
+
+    cf = pybxdev.tools.configure_file.configure_file(args.debug)
+    for s in subs.keys() :
+        cf.add_substitution(s, subs[s])
+    if args.debug :
+        cf.dump(sys.stderr, "Configure file: ", "[debug] ")
+
+    print("[debug] test 2")
+    if args.debug :
+        print("[debug] args.infile  = '%s'" % args.infile)
+        print("[debug] args.outfile = '%s'" % args.outfile)
+        print("[debug] type(args.infile)  = %s" % type(args.infile))
+        print("[debug] type(args.outfile) = %s" % type(args.outfile))
+    try:
+        cf.run(args.infile, args.outfile)
+    except Exception as error:
+        sys.stderr.write("[error] Configure file failed: %s\n" % (error))
+        sys.exit(1)
+    except:
+        sys.stderr.write("[error] Configure file failed! Unexpected error!\n")
+        sys.exit(1)
+    sys.exit(0)
+
+# end
