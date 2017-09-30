@@ -25,6 +25,19 @@ development through a specific branch model.
 * Tag management
 
 
+Download
+========
+
+
+#. From the directory of your choice (here ``${HOME}``):
+
+   .. code:: sh
+
+      $ mkdir -p ${HOME}/BxDevTools
+      $ cd ${HOME}/BxDevTools
+      $ git clone https://github.com/BxCppDev/bxdevtools.git bxdevtools
+
+
 Installation
 ============
 
@@ -34,26 +47,30 @@ WIP
 
    .. code:: sh
 
-   $ mkdir _build.d   # Create a build directory
-   $ cd _build.d      # Cd in it
-..
+      $ cd ${HOME}/BxDevTools/bxdevtools
+      $ mkdir _build.d   # Create a build directory
+      $ cd _build.d      # Cd in it
+
 
 #. Then configure:
 
    .. code:: sh
 
-   $ cmake -DCMAKE_INSTALL_PREFIX="${HOME}/BxDevTools/bxdevtools/install-devel" ..
-..
+      $ cmake -DCMAKE_INSTALL_PREFIX="${HOME}/BxDevTools/bxdevtools/install-devel" ..
 
-   #. Build and install:
+
+#. Build and install:
 
    .. code:: sh
-   $ make
-   $ make install
-..
+
+      $ make
+      $ make install
+
 
 Setup
 =====
+
+You must define two environment variables in order to activate BxDevTools' utilities:
 
 .. code:: sh
 
@@ -61,8 +78,7 @@ Setup
    $ export PYTHONPATH=$(bxdevtools-config --libdir):${PYTHONPATH}
 ..
 
-
-In your ``.bashrc`` script, add:
+In your ``.bashrc`` script, it is convenient to add:
 
 .. code:: sh
 
@@ -79,4 +95,13 @@ In your ``.bashrc`` script, add:
      return 0
    }
    alias bxdevtools_devel_setup='do_bxdevtools_devel_setup'
-..
+
+
+Invoking the following command will activate BxDevTools' utilities:
+
+.. code:: sh
+
+   $ bxdevtools_devel_setup
+
+
+.. end
