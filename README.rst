@@ -33,3 +33,23 @@ Setup
    $ export PATH=_install.d/bin:${PATH}
    $ export PYTHONPATH=$(bxdevtools-config --libdir):${PYTHONPATH}
 ..
+
+
+In your ``.bashrc`` script, add:
+
+.. code:: sh
+
+   function do_bxdevtools_devel_setup()
+   {
+     if [ -n "${BXDEVTOOLS_INSTALL_PREFIX}" ]; then
+       echo >&2 "[warning] do_bxdevtools_devel_setup: BxDevTools/devel is alreadry setup!"
+       return 1
+     fi
+     export BXDEVTOOLS_INSTALL_PREFIX="/bxdevtools/installation/prefix"
+     export PATH="${BXDEVTOOLS_INSTALL_PREFIX}/bin:${PATH}"
+     export PYTHONPATH="$(bxdevtools-config --libdir):${PYTHONPATH}"
+     echo >&2 "[info] do_bxdevtools_devel_setup: BxDevTools/devel is now setup!"
+     return 0
+   }
+   alias bxdevtools_devel_setup='do_bxdevtools_devel_setup'
+..
