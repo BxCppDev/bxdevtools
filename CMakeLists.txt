@@ -62,7 +62,8 @@ install( FILES
   ${PROJECT_BINARY_DIR}/source/scripts/bxdevtools-config
   ${PROJECT_SOURCE_DIR}/source/scripts/configure_file
   ${PROJECT_SOURCE_DIR}/source/scripts/bxgit_create_feature_branch
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/
+  ${PROJECT_SOURCE_DIR}/source/scripts/bxgit_terminate_feature_branch
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
   PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
   GROUP_READ GROUP_EXECUTE
   WORLD_READ WORLD_EXECUTE
@@ -93,25 +94,13 @@ install( FILES
   )
 
 install( DIRECTORY ${PROJECT_SOURCE_DIR}/source/pybxdev
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${BxDevTools_TAG}/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${BxDevTools_TAG}
   FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
   DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
   GROUP_READ GROUP_EXECUTE
   WORLD_READ WORLD_EXECUTE
   FILES_MATCHING PATTERN "*.py"
   )
-
-# set(_bxdev_pybxdev_modules
-#   ${PROJECT_BINARY_DIR}/source/pybxdev/__init__.py.in
-#   source/pybxdev/package
-#   source/pybxdev/_bxdev_version.bash
-#   )
-
-# set(_bxdev_pybxdev_modules
-#   ${PROJECT_BINARY_DIR}/source/pybxdev/version.py
-#   source/pybxdev/package
-#   source/pybxdev/_bxdev_version.bash
-#   )
 
 
 # - end

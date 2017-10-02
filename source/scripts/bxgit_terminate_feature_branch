@@ -14,7 +14,7 @@ fi
 function app_usage()
 {
     cat <<EOF
-Usage: bxgit_create_feature_branch [OPTION...] BRANCHNAME [FROM]
+Usage: bxgit_terminate_feature_branch [OPTION...] TOPIC
 
 Known values for OPTION are:
 
@@ -29,7 +29,7 @@ EOF
 }
 
 debug=false
-from="develop"
+to="develop"
 topic=""
 remote=false
 feature_branch=""
@@ -44,7 +44,7 @@ while [ -n "$1" ]; do
 	    bxdev_app_exit 0
 	elif [ "${optarg}" = "--debug" ]; then
 	    debug=true
-	elif [ "${optarg}" = "--topic" -o "${optarg}" = "-t"  ]; then
+	elif [ "${optarg}" = "--topic" -o "${optarg}" = "-t" ]; then
 	    shift 1
 	    topic="$1"
 	elif [ "${optarg}" = "--remote" ]; then
@@ -94,9 +94,19 @@ if [ -z "${feature_branch}" ]; then
 fi
 bxdev_message_info "Feature branch name = '${feature_branch}'"
 
+if [ -z "${topic}" ]; then
+    if [ "x${feature_branch:0:9}" = "x_feature-" ]; then
+	remote=true
+	topic="${feature_branch:9}"
+    elif [ "x${feature_branch:0:9}" = "xfeature-" ]; then
+	remote=false
+	topic="${feature_branch:8}"
+    fi
+fi
+
 if [ ${debug} = true ]; then
     bxdev_message_debug "topic          = '${topic}'"
-    bxdev_message_debug "remote         = '${remote}'"
+    bxdev_message_debug "remote         = ${remote}"
     bxdev_message_debug "feature_branch = '${feature_branch}'"
     bxdev_message_debug "from branch    = '${from}'"
 fi
@@ -108,42 +118,52 @@ else
     bxdev_message_info "Found a base Git repository."
 fi
 
-bxdev_git_local_branch_exists "${from}"
+bxdev_git_local_branch_exists "${feature_branch}"
 if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "No '${from}' branch exists in this Git repository!"
+    bxdev_app_exit 1 "No local '${feature_branch}' feature branch exists in this Git repository!"
 else
-    bxdev_message_info "Found a local '${from}' branch."
+    bxdev_message_info "Found a local '${feature_branch}' feature branch."
 fi
 
-bxdev_git_remote_branch_exists "${from}"
+bxdev_git_local_branch_exists "${to}"
 if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "No remote/origin '${from}' branch is associated to this Git repository!"
+    bxdev_app_exit 1 "No '${to}' branch exists in this Git repository!"
 else
-    bxdev_message_info "Found a remote/origin '${from}' branch."
+    bxdev_message_info "Found a local '${to}' branch."
+fi
+
+git checkout ${to}
+if [ $? -ne 0 ]; then
+    bxdev_app_exit 1 "Could not switch to local '${to}' branch!"
 fi
 
 bxdev_git_local_branch_exists "${feature_branch}"
 if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "A local '${feature_branch}' feature branch already exists in this Git repository!"
+    bxdev_app_exit 1 "No local '${feature_branch}' feature branch exists in this Git repository!"
+else
+    bxdev_message_info "Found a local '${feature_branch}' feature branch."
 fi
 
-bxdev_git_remote_branch_exists "${feature_branch}"
+bxdev_message_info "Merge '${feature_branch}' feature branch into '${to}' branch..."
+git merge -m "Merge feature branch '${feature_branch}' into branch '${to}'" --no-ff ${feature_branch}
 if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "A remote '${feature_branch}' feature branch already exists!"
+    bxdev_app_exit 1 "Could not merge local '${feature_branch}' feature branch into '${to}' branch!"
 fi
 
-git checkout -b ${feature_branch} ${from}
+bxdev_message_info "Deleting local '${feature_branch}' feature branch..."
+git branch -d ${feature_branch}
 if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "Could not create the new feature branch '${feature_branch}'!"
+    bxdev_app_exit 1 "Could not delete local '${feature_branch}' feature branch!"
 fi
-bxdev_message_info "Feature branch name = ${feature_branch}'"
 
-if [ ${remote} == true ]; then
-    git push --set-upstream origin ${feature_branch}
-    if [ $? -ne 0 ]; then
-	bxdev_app_exit 1 "Could not push the new local '${feature_branch}' feature branch on 'origin/${feature_branch}'!"
-    fi
-fi
+bxdev_app_exit 1 "Abort"
+# if [ ${remote} == true ]; then
+#     bxdev_message_info "Pushing modifications from local '${to}' branch to 'origin/${to}' branch..."
+#     git push origin ${to}
+#     if [ $? -ne 0 ]; then
+# 	bxdev_app_exit 1 "Could not push modifications from local '${to}' branch to 'origin/${to}' branch!"
+#     fi
+# fi
 
 bxdev_app_exit 0
 
