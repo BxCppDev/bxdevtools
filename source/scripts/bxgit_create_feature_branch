@@ -123,12 +123,12 @@ else
 fi
 
 bxdev_git_local_branch_exists "${feature_branch}"
-if [ $? -ne 0 ]; then
+if [ $? -eq 0 ]; then
     bxdev_app_exit 1 "A local '${feature_branch}' feature branch already exists in this Git repository!"
 fi
 
 bxdev_git_remote_branch_exists "${feature_branch}"
-if [ $? -ne 0 ]; then
+if [ $? -eq 0 ]; then
     bxdev_app_exit 1 "A remote '${feature_branch}' feature branch already exists!"
 fi
 
