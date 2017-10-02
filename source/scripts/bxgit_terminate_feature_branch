@@ -23,6 +23,7 @@ Known values for OPTION are:
  --topic NAME   the topic of the new feature branch.
  --remote       the new feature branch is associated
                 with an upstream remote origin.
+ --pull         pull the upstream remote branch.
 
 EOF
     return 0
@@ -34,6 +35,7 @@ topic=""
 remote=false
 feature_branch=""
 feature_branch_label=""
+pull=false
 
 while [ -n "$1" ]; do
     optarg="$1"
@@ -49,6 +51,8 @@ while [ -n "$1" ]; do
 	    topic="$1"
 	elif [ "${optarg}" = "--remote" ]; then
 	    remote=true
+	elif [ "${optarg}" = "--pull" ]; then
+	    pull=true
 	else
 	    bxdev_app_exit 1 "Unsupported option '${option}'!"
 	fi
@@ -150,19 +154,24 @@ fi
 #     bxdev_app_exit 1 "Some files have been modified and not updated!"
 # fi
 
-git checkout ${to}
-if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "Could not switch to local '${to}' branch!"
-fi
-
-bxdev_message_info "Pulling from ''origin/${to}' branch..."
-git pull ${to}
-
 bxdev_git_local_branch_exists "${feature_branch}"
 if [ $? -ne 0 ]; then
     bxdev_app_exit 1 "No local '${feature_branch}' feature branch exists in this Git repository!"
 else
     bxdev_message_info "Found a local '${feature_branch}' feature branch."
+fi
+
+git checkout ${to}
+if [ $? -ne 0 ]; then
+    bxdev_app_exit 1 "Could not switch to local '${to}' branch!"
+fi
+
+if [ ${pull} = true ]; then
+    bxdev_message_info "Pulling from 'origin/${to}' branch to local '${to}' branch ..."
+    git pull ${to}
+    if [ $? -ne 0 ]; then
+	bxdev_app_exit 1 "Could not pull from 'origin/${to}' branch to local '${to}' branch!"
+    fi
 fi
 
 bxdev_message_info "Merging '${feature_branch}' feature branch into '${to}' branch..."
