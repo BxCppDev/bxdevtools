@@ -155,6 +155,9 @@ if [ $? -ne 0 ]; then
     bxdev_app_exit 1 "Could not switch to local '${to}' branch!"
 fi
 
+bxdev_message_info "Pulling from ''origin/${to}' branch..."
+git pull ${to}
+
 bxdev_git_local_branch_exists "${feature_branch}"
 if [ $? -ne 0 ]; then
     bxdev_app_exit 1 "No local '${feature_branch}' feature branch exists in this Git repository!"
@@ -162,7 +165,7 @@ else
     bxdev_message_info "Found a local '${feature_branch}' feature branch."
 fi
 
-bxdev_message_info "Merge '${feature_branch}' feature branch into '${to}' branch..."
+bxdev_message_info "Merging '${feature_branch}' feature branch into '${to}' branch..."
 git merge -m "Merge feature branch '${feature_branch}' into branch '${to}'" --no-ff ${feature_branch}
 if [ $? -ne 0 ]; then
     bxdev_app_exit 1 "Could not merge local '${feature_branch}' feature branch into '${to}' branch!"
@@ -174,14 +177,11 @@ if [ $? -ne 0 ]; then
     bxdev_app_exit 1 "Could not delete local '${feature_branch}' feature branch!"
 fi
 
-bxdev_app_exit 1 "Abort"
-# if [ ${remote} == true ]; then
-#     bxdev_message_info "Pushing modifications from local '${to}' branch to 'origin/${to}' branch..."
-#     git push origin ${to}
-#     if [ $? -ne 0 ]; then
-# 	bxdev_app_exit 1 "Could not push modifications from local '${to}' branch to 'origin/${to}' branch!"
-#     fi
-# fi
+bxdev_message_info "Pushing modifications from local '${to}' branch to 'origin/${to}' branch..."
+git push origin ${to}
+if [ $? -ne 0 ]; then
+    bxdev_app_exit 1 "Could not push modifications from local '${to}' branch to 'origin/${to}' branch!"
+fi
 
 bxdev_app_exit 0
 
