@@ -138,6 +138,18 @@ if [ "${cbn}" != "${feature_branch}" ]; then
     bxdev_app_exit 1 "The '$feature_branch}' branch is not the active one!"
 fi
 
+# test -d /tmp/${USER} || mkdir -p /tmp/${USER}
+# bxgstmp=$(mktemp -p /tmp/${USER} bxgit_terminate_feature_branch.XXXXXXX)
+# git status --porcelain > ${bxgstmp}
+# grep "^M." ${bxgstmp}
+# if [ $? -ne 0 ]; then
+#     bxdev_app_exit 1 "Some files have been modified and not commited!"
+# fi
+# grep "^.M" ${bxgstmp}
+# if [ $? -ne 0 ]; then
+#     bxdev_app_exit 1 "Some files have been modified and not updated!"
+# fi
+
 git checkout ${to}
 if [ $? -ne 0 ]; then
     bxdev_app_exit 1 "Could not switch to local '${to}' branch!"
