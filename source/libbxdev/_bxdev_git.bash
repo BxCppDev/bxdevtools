@@ -15,6 +15,10 @@ function bxdev_git_check_feature_name()
     if [ "x${name}" = "x" ]; then
 	return 1
     fi
+    echo "${name}" | grep "^[[:alpha:]][[:alnum:]-_]*$"
+    if  [ $? -ne 0 ]; then
+	return 1
+    fi
     return 0
 }
 
@@ -26,6 +30,14 @@ function bxdev_git_check_repository()
 	return 1
     fi
     return 0
+}
+
+# Return the name of the current branch
+function bxdev_git_current_branch_name()
+{
+    bn=$(git branch -l | grep "^* " | cut -d' ' -f2)
+    echo ${bn}
+    return
 }
 
 # Check if a Git local branch with given name exists.

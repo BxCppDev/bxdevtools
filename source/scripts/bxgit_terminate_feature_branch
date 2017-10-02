@@ -132,6 +132,12 @@ else
     bxdev_message_info "Found a local '${to}' branch."
 fi
 
+cbn=$(bxdev_git_current_branch_name)
+bxdev_message_info "Current branch name: '${bxdev_git_current_branch_name}'"
+if [ "${cbn}" != "${feature_branch}" ]; then
+    bxdev_app_exit 1 "The '$feature_branch}' branch is not the active one!"
+fi
+
 git checkout ${to}
 if [ $? -ne 0 ]; then
     bxdev_app_exit 1 "Could not switch to local '${to}' branch!"
