@@ -58,7 +58,7 @@ while [ -n "$1" ]; do
 	    shift 1
 	    issue_number="$1"
 	    bxdev_utils_check_integer ${issue_number}
-	    if [ $? -ne $BXDEV_UTILS_TRUE ]; then
+	    if [ $? -ne ${BXDEV_UTILS_TRUE} ]; then
 		bxdev_app_exit ${BXDEV_UTILS_FAILURE} "Not a valid issue number! Abort!"
 	    fi
 	    topic="issue-${issue_number}"

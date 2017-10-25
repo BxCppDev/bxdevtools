@@ -14,28 +14,25 @@ fi
 function app_usage()
 {
     cat <<EOF
-Usage: bxgit_terminate_feature_branch [OPTION...] TOPIC
+Usage: bxgit_terminate_feature_branch [OPTION...] BRANCH_NAME
 
 Known values for OPTION are:
 
- --help		display this help and exit.
- --debug	activate debug mode.
- --topic NAME   the topic of the new feature branch.
- --remote       the new feature branch is associated
-                with an upstream remote origin.
- --pull         pull the upstream remote branch.
+ --help		Display this help and exit.
+ --dry-run      Do not perform any Git actions, only tests.
+ --debug	Activate debug mode.
 
 EOF
     return 0
 }
 
 debug=false
-to="develop"
+dry_run=false
+to_branch="develop"
 topic=""
 remote=false
 feature_branch=""
 feature_branch_label=""
-pull=false
 
 while [ -n "$1" ]; do
     optarg="$1"
@@ -46,13 +43,11 @@ while [ -n "$1" ]; do
 	    bxdev_app_exit 0
 	elif [ "${optarg}" = "--debug" ]; then
 	    debug=true
-	elif [ "${optarg}" = "--topic" -o "${optarg}" = "-t" ]; then
+	elif [ "${optarg}" = "--dry-run" ]; then
+	    dry_run=true
+	elif [ "${optarg}" = "--branch" -o "${optarg}" = "-b" ]; then
 	    shift 1
-	    topic="$1"
-	elif [ "${optarg}" = "--remote" ]; then
-	    remote=true
-	elif [ "${optarg}" = "--pull" ]; then
-	    pull=true
+	    feature_branch="$1"
 	else
 	    bxdev_app_exit 1 "Unsupported option '${option}'!"
 	fi
@@ -85,24 +80,30 @@ if [ -n "${feature_branch_label}" ]; then
 	feature_branch=${feature_branch_label}
     fi
 fi
-if [ -z "${feature_branch}" ]; then
-    if [ -z "${topic}" ]; then
-	app_usage
-	bxdev_app_exit 1 "Missing feature branch topic!"
-    else
-	feature_branch="_feature-${topic}"
-	if [ ${remote} == true ]; then
-	    feature_branch="feature-${topic}"
-	fi
-    fi
+
+bxdev_git_check_repository
+if [ $? -ne 0 ]; then
+    bxdev_app_exit 1 "Not a base Git repository!"
+else
+    bxdev_message_info "Found a base Git repository."
 fi
+
+if [ -z "${feature_branch}" ]; then
+    current_branch=$(bxdev_git_current_branch_name)
+    bxdev_git_check_feature_branch_name "${current_branch}"
+    if [ $? -ne 0 ]; then
+	bxdev_app_exit 1 "Current branch name is not a feature branch!"
+    fi
+    feature_branch="${current_branch}"
+fi
+
 bxdev_message_info "Feature branch name = '${feature_branch}'"
 
 if [ -z "${topic}" ]; then
     if [ "x${feature_branch:0:9}" = "x_feature-" ]; then
 	remote=true
 	topic="${feature_branch:9}"
-    elif [ "x${feature_branch:0:9}" = "xfeature-" ]; then
+    elif [ "x${feature_branch:0:8}" = "xfeature-" ]; then
 	remote=false
 	topic="${feature_branch:8}"
     fi
@@ -115,13 +116,6 @@ if [ ${debug} = true ]; then
     bxdev_message_debug "from branch    = '${from}'"
 fi
 
-bxdev_git_check_repository
-if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "Not a base Git repository!"
-else
-    bxdev_message_info "Found a base Git repository."
-fi
-
 bxdev_git_local_branch_exists "${feature_branch}"
 if [ $? -ne 0 ]; then
     bxdev_app_exit 1 "No local '${feature_branch}' feature branch exists in this Git repository!"
@@ -129,17 +123,17 @@ else
     bxdev_message_info "Found a local '${feature_branch}' feature branch."
 fi
 
-bxdev_git_local_branch_exists "${to}"
+bxdev_git_local_branch_exists "${to_branch}"
 if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "No '${to}' branch exists in this Git repository!"
+    bxdev_app_exit 1 "No '${to_branch}' branch exists in this Git repository!"
 else
-    bxdev_message_info "Found a local '${to}' branch."
+    bxdev_message_info "Found a local '${to_branch}' branch."
 fi
 
 cbn=$(bxdev_git_current_branch_name)
-bxdev_message_info "Current branch name: '${bxdev_git_current_branch_name}'"
+bxdev_message_info "Current branch name: '${cbn}'"
 if [ "${cbn}" != "${feature_branch}" ]; then
-    bxdev_app_exit 1 "The '$feature_branch}' branch is not the active one!"
+    bxdev_app_exit 1 "The '${feature_branch}' branch is not the active one!"
 fi
 
 # test -d /tmp/${USER} || mkdir -p /tmp/${USER}
@@ -154,30 +148,29 @@ fi
 #     bxdev_app_exit 1 "Some files have been modified and not updated!"
 # fi
 
-bxdev_git_local_branch_exists "${feature_branch}"
-if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "No local '${feature_branch}' feature branch exists in this Git repository!"
-else
-    bxdev_message_info "Found a local '${feature_branch}' feature branch."
+if [ ${dry_run} == true ]; then
+    echo >&2 "DEVEL: dry run stops the script here."
+    bxdev_app_exit 0
 fi
+bxdev_app_exit 0
 
-git checkout ${to}
+git checkout ${to_branch}
 if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "Could not switch to local '${to}' branch!"
+    bxdev_app_exit 1 "Could not switch to local '${to_branch}' branch!"
 fi
 
 if [ ${pull} = true ]; then
-    bxdev_message_info "Pulling from 'origin/${to}' branch to local '${to}' branch ..."
-    git pull ${to}
+    bxdev_message_info "Pulling from 'origin/${to_branch}' branch to local '${to_branch}' branch ..."
+    git pull ${to_branch}
     if [ $? -ne 0 ]; then
-	bxdev_app_exit 1 "Could not pull from 'origin/${to}' branch to local '${to}' branch!"
+	bxdev_app_exit 1 "Could not pull from 'origin/${to_branch}' branch to local '${to_branch}' branch!"
     fi
 fi
 
-bxdev_message_info "Merging '${feature_branch}' feature branch into '${to}' branch..."
-git merge -m "Merge feature branch '${feature_branch}' into branch '${to}'" --no-ff ${feature_branch}
+bxdev_message_info "Merging '${feature_branch}' feature branch into '${to_branch}' branch..."
+git merge -m "Merge feature branch '${feature_branch}' into branch '${to_branch}'" --no-ff ${feature_branch}
 if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "Could not merge local '${feature_branch}' feature branch into '${to}' branch!"
+    bxdev_app_exit 1 "Could not merge local '${feature_branch}' feature branch into '${to_branch}' branch!"
 fi
 
 bxdev_message_info "Deleting local '${feature_branch}' feature branch..."
@@ -186,10 +179,10 @@ if [ $? -ne 0 ]; then
     bxdev_app_exit 1 "Could not delete local '${feature_branch}' feature branch!"
 fi
 
-bxdev_message_info "Pushing modifications from local '${to}' branch to 'origin/${to}' branch..."
-git push origin ${to}
+bxdev_message_info "Pushing modifications from local '${to_branch}' branch to 'origin/${to_branch}' branch..."
+git push origin ${to_branch}
 if [ $? -ne 0 ]; then
-    bxdev_app_exit 1 "Could not push modifications from local '${to}' branch to 'origin/${to}' branch!"
+    bxdev_app_exit 1 "Could not push modifications from local '${to_branch}' branch to 'origin/${to_branch}' branch!"
 fi
 
 bxdev_app_exit 0

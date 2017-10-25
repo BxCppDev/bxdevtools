@@ -2,7 +2,11 @@
 
 function bxdev_git_default_origin_host()
 {
-    echo "https://github.com/BxCppDev/"
+    local _bxdev_git_default_origin_hostname="https://github.com/BxCppDev/"
+    if [ "x${BXDEV_GIT_DEFAULT_ORIGIN_HOSTNAME}" != "x" ]; then
+	_bxdev_git_default_origin_hostname="${BXDEV_GIT_DEFAULT_ORIGIN_HOSTNAME}"
+    fi
+    echo ${_bxdev_git_default_origin_hostname}
     return 0
 }
 
@@ -22,12 +26,62 @@ function bxdev_git_check_feature_name()
     return 0
 }
 
-# Check if directory is a base Git directory.
+# Check if a branch name is for feature branch.
+# Return 0 is yes, 1 if no
+function bxdev_git_check_feature_branch_name()
+{
+    local branch_name="$1"
+    if [ "x${branch_name:0:9}" = "x_feature-" ]; then
+	return 0
+    elif [ "x${branch_name:0:8}" = "xfeature-" ]; then
+	return 0
+    fi
+    return 1
+}
+
+# Check if a branch name is master.
+# Return 0 is yes, 1 if no
+function bxdev_git_check_master_branch_name()
+{
+    local branch_name="$1"
+    if [ "x${branch_name}" = "xmaster" ]; then
+	return 0
+    fi
+    return 1
+}
+
+# Check if a branch name is develop.
+# Return 0 is yes, 1 if no
+function bxdev_git_check_develop_branch_name()
+{
+    local branch_name="$1"
+    if [ "x${branch_name}" = "xdevelop" ]; then
+	return 0
+    fi
+    return 1
+}
+
+# Check if directory is in a Git repository.
 # Return 0 is yes, 1 if no
 function bxdev_git_check_repository()
 {
-    if [ ! -d ".git" ]; then
+    git rev-parse --is-inside-work-tree > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
 	return 1
+    fi
+    return 0
+}
+
+# Check if directory is a base Git directory.
+# Return 0 is yes, 1 if no
+function bxdev_git_check_base_repository()
+{
+    bxdev_git_check_repository
+    if [ $? -ne 0 ]; then
+	return 1
+    fi
+    if [ ! -d ".git" ]; then
+    	return 1
     fi
     return 0
 }
