@@ -7,6 +7,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+. $(bxdevtools-config --moduledir)/_bxdev_utils.bash
 . $(bxdevtools-config --moduledir)/_bxdev_app.bash
 . $(bxdevtools-config --moduledir)/_bxdev_message.bash
 . $(bxdevtools-config --moduledir)/_bxdev_git.bash
@@ -152,6 +153,7 @@ if [ ${dry_run} == true ]; then
     echo >&2 "DEVEL: dry run stops the script here."
     bxdev_app_exit 0
 fi
+##### STOP HERE FOR NOW
 bxdev_app_exit 0
 
 git checkout ${to_branch}
