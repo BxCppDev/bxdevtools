@@ -7,6 +7,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+. $(bxdevtools-config --moduledir)/_bxdev_utils.bash
 . $(bxdevtools-config --moduledir)/_bxdev_app.bash
 . $(bxdevtools-config --moduledir)/_bxdev_message.bash
 . $(bxdevtools-config --moduledir)/_bxdev_git.bash
@@ -18,17 +19,21 @@ Usage: bxgit_create_feature_branch [OPTION...] BRANCHNAME [FROM]
 
 Known values for OPTION are:
 
- --help		display this help and exit.
- --debug	activate debug mode.
- --topic NAME   the topic of the new feature branch.
- --remote       the new feature branch is associated
-                with an upstream remote origin.
+ --help	  	  Display this help and exit.
+ --dry-run  	  Do not perform any Git actions, only tests.
+ --debug	  Activate debug mode.
+ --topic NAME     The topic of the new feature branch.
+ --issue NUMBER   Set the issue number the new feature branch.is associated
+                  with. The issue should not refered to a bug or a defect.
+ --remote         The new feature branch is associated with an
+                  upstream remote origin.(public feature branch)
 
 EOF
     return 0
 }
 
 debug=false
+dry_run=false
 from="develop"
 topic=""
 remote=false
@@ -44,9 +49,19 @@ while [ -n "$1" ]; do
 	    bxdev_app_exit 0
 	elif [ "${optarg}" = "--debug" ]; then
 	    debug=true
+	elif [ "${optarg}" = "--dry-run" ]; then
+	    dry_run=true
 	elif [ "${optarg}" = "--topic" -o "${optarg}" = "-t"  ]; then
 	    shift 1
 	    topic="$1"
+	elif [ "${optarg}" = "--issue" -o "${optarg}" = "-i"  ]; then
+	    shift 1
+	    issue_number="$1"
+	    bxdev_utils_check_integer ${issue_number}
+	    if [ $? -ne $BXDEV_UTILS_TRUE ]; then
+		bxdev_app_exit ${BXDEV_UTILS_FAILURE} "Not a valid issue number! Abort!"
+	    fi
+	    topic="issue-${issue_number}"
 	elif [ "${optarg}" = "--remote" ]; then
 	    remote=true
 	else
@@ -130,6 +145,11 @@ fi
 bxdev_git_remote_branch_exists "${feature_branch}"
 if [ $? -eq 0 ]; then
     bxdev_app_exit 1 "A remote '${feature_branch}' feature branch already exists!"
+fi
+
+if [ ${dry_run} == true ]; then
+    echo >&2 "DEVEL: dry run stops the script here."
+    bxdev_app_exit 0
 fi
 
 git checkout -b ${feature_branch} ${from}

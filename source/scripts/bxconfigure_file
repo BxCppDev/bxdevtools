@@ -16,18 +16,18 @@ if __name__ == "__main__" :
     # outfile=None
     # subs = {}
     parser = argparse.ArgumentParser(prog='configure_file',
-                                     description='Process some input skeleton file and apply substitution.',
+                                     description='Process some input skeleton file and apply substitutions.',
                                      epilog="Example:\n\n"
-                                     "\tconfigure_file -s \"@NAME@John Doe@\" run.conf.in run.conf"
+                                     "\tconfigure_file -s \"@NAME@John Doe@\" -s \"@VERSION@1.0.0@\" run.conf.in run.conf"
     )
     parser.add_argument('infile',
                         metavar='INFILE',
-                        help='input skeleton file')
+                        help='Input skeleton file')
     parser.add_argument('outfile',
                         metavar='OUTFILE',
-                        help='output file')
+                        help='Output file')
     parser.add_argument('-d', '--debug',
-                        help='activate debug mode',
+                        help='Activate debug mode',
                         action="store_true")
     parser.add_argument('-s', '--substitute',
                         metavar='"@TAG@VALUE@"',
@@ -35,7 +35,7 @@ if __name__ == "__main__" :
                         dest='substitutions',
                         #nargs='+',
                         default=[],
-                        help='add a substitution rule where each '
+                        help='Add a substitution rule where each '
                         'occurence of \'@TAG@\' will be replaced by the \'VALUE\' string.'
                         '\nExample: -s "@NAME@John Doe@"')
 

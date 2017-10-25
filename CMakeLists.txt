@@ -60,7 +60,7 @@ install( FILES
 install( FILES
   ${PROJECT_SOURCE_DIR}/source/scripts/bxdevtools
   ${PROJECT_BINARY_DIR}/source/scripts/bxdevtools-config
-  ${PROJECT_SOURCE_DIR}/source/scripts/configure_file
+  ${PROJECT_SOURCE_DIR}/source/scripts/bxconfigure_file
   ${PROJECT_SOURCE_DIR}/source/scripts/bxgit_create_feature_branch
   ${PROJECT_SOURCE_DIR}/source/scripts/bxgit_terminate_feature_branch
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
@@ -70,6 +70,7 @@ install( FILES
   )
 
 set(_bxdev_lib_modules
+  ${PROJECT_SOURCE_DIR}/source/libbxdev/_bxdev_utils.bash
   ${PROJECT_SOURCE_DIR}/source/libbxdev/_bxdev_app.bash
   ${PROJECT_SOURCE_DIR}/source/libbxdev/_bxdev_message.bash
   ${PROJECT_SOURCE_DIR}/source/libbxdev/_bxdev_version.bash
